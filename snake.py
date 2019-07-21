@@ -103,8 +103,17 @@ def add_snake(screen, **kwargs):
     return cursor_x, cursor_y
 
 
+def render_status_bar(screen, height, width):
+    global SCORE
+    statusbarstr = "RETRO SNAKE GAME. Press q to quit. SCORE: {}".format(SCORE)
+    screen.attron(curses.color_pair(3))
+    screen.addstr(height - 1, 0, statusbarstr)
+    screen.addstr(height - 1, len(statusbarstr), " " * (width - len(statusbarstr) - 1))
+    screen.attroff(curses.color_pair(3))
+
+
 def main(win):
-    global SNAKE_X, SNAKE_Y
+    global SNAKE_X, SNAKE_Y, SCORE
     move_snake = dict()
     move_snake[KEY_UP] = up
     move_snake[KEY_DOWN] = down
@@ -138,6 +147,7 @@ def main(win):
                 break
             else:
                 screen.erase()
+                render_status_bar(screen, height, width)
                 prepare_food(screen, SNAKE_X, SNAKE_Y, refresh=False)
                 cursor_x, cursor_y = move_snake.get(key, do_nothing)(screen, cursor_x=cursor_x, cursor_y=cursor_y)
             screen.refresh()
