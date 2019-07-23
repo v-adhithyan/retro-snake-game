@@ -1,6 +1,8 @@
 import curses
 import functools
 import random
+from datetime import datetime
+import time
 
 begin_x = 20
 begin_y = 7
@@ -66,6 +68,8 @@ def prepare_food(screen, x, y, refresh=True):
 @detect_screen_edge
 def up(screen, **kwargs):
     cursor_y = kwargs.pop('cursor_y') - 1
+    if kwargs.get('key_press'):
+        cursor_y = cursor_y + 1
     cursor_x = kwargs.pop('cursor_x')
     return add_snake(screen, cursor_y=cursor_y, cursor_x=cursor_x, direction='up')
 
@@ -73,6 +77,8 @@ def up(screen, **kwargs):
 @detect_screen_edge
 def down(screen, **kwargs):
     cursor_y = kwargs.pop('cursor_y') + 1
+    if kwargs.get('key_press'):
+        cursor_y = cursor_y - 1
     cursor_x = kwargs.pop('cursor_x')
     return add_snake(screen, cursor_y=cursor_y, cursor_x=cursor_x, direction='down')
 
@@ -81,6 +87,8 @@ def down(screen, **kwargs):
 def left(screen, **kwargs):
     cursor_y = kwargs.pop('cursor_y')
     cursor_x = kwargs.pop('cursor_x') - 1
+    if kwargs.get('key_press'):
+        cursor_x = cursor_x + 1
     return add_snake(screen, cursor_y=cursor_y, cursor_x=cursor_x, direction='left')
 
 
@@ -88,6 +96,8 @@ def left(screen, **kwargs):
 def right(screen, **kwargs):
     cursor_y = kwargs.pop('cursor_y')
     cursor_x = kwargs.pop('cursor_x') + 1
+    if kwargs.get('key_press'):
+        cursor_x = cursor_x - 1
     return add_snake(screen, cursor_y=cursor_y, cursor_x=cursor_x, direction='right')
 
 
@@ -140,7 +150,17 @@ def render_status_bar(screen, height, width):
     statusbarstr = "RETRO SNAKE GAME. Press q to quit. SCORE: {}".format(SCORE)
     screen.attron(curses.color_pair(3))
     screen.addstr(height - 1, 0, statusbarstr)
-    screen.addstr(height - 1, len(statusbarstr), " " * (width - len(statusbarstr) - 1))
+    screen.addstr(height - 1, len(statusbarstr), " " *
+                  (width - len(statusbarstr) - 1))
+    screen.attroff(curses.color_pair(3))
+
+
+# for debug purposes
+def render_status_bar_1(screen, message, width, height):
+    screen.attron(curses.color_pair(3))
+    screen.addstr(height - 1, 0, message)
+    screen.addstr(height - 1, len(message), " " *
+                  (width - len(message) - 1))
     screen.attroff(curses.color_pair(3))
 
 
@@ -174,12 +194,14 @@ def main(win):
     curses.cbreak()
     screen.keypad(True)
     win = curses.newwin(height // 2, width // 2, height // 2, width // 2)
+    win.nodelay(True)
     cursor_x = width // 2
     cursor_y = height // 2
     SNAKE_X = random.randint(0, width)
     SNAKE_Y = random.randint(0, height - 1)
     prepare_food(screen, x=SNAKE_X, y=SNAKE_Y, refresh=False)
-    cursor_x, cursor_y, direction = add_snake(screen, cursor_x=cursor_x + 1, cursor_y=cursor_y, direction='right')
+    cursor_x, cursor_y, direction = add_snake(
+        screen, cursor_x=cursor_x + 1, cursor_y=cursor_y, direction='right')
     screen.refresh()
     while True:
         try:
@@ -187,12 +209,19 @@ def main(win):
             if key == ord('q'):
                 quit_game(screen)
                 break
+            elif key == -1:
+                screen.erase()
+                time.sleep(0.5)
+                render_status_bar(screen, height, width)
+                prepare_food(screen, SNAKE_X, SNAKE_Y, refresh=False)
+                cursor_x, cursor_y, direction = automove(
+                    screen, direction, cursor_x, cursor_y)
             else:
                 screen.erase()
                 render_status_bar(screen, height, width)
                 prepare_food(screen, SNAKE_X, SNAKE_Y, refresh=False)
                 cursor_x, cursor_y, direction = move_snake.get(key, do_nothing)(screen, cursor_x=cursor_x,
-                                                                                cursor_y=cursor_y, direction=direction)
+                                                                                cursor_y=cursor_y, direction=direction, key_press=True)
             #automove(screen, direction, cursor_x, cursor_y)
             screen.refresh()
         except Exception as e:
