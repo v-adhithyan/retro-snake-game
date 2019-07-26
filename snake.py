@@ -14,7 +14,7 @@ KEY_UP = 65
 KEY_DOWN = 66
 KEY_RIGHT = 67
 KEY_LEFT = 68
-SNAKE = '.'
+SNAKE = '..'
 SNAKE_X, SNAKE_Y = 0, 0
 SCORE = 0
 DIRECTION = 'right'
@@ -23,7 +23,6 @@ DIRECTION = 'right'
 # Todo: Command pattern is suitable here, let's use that after game just works
 # Todo: snake direction alignment
 # Todo: increase length of snake as per score
-# Todo: add best score
 
 class Game:
     config_file = os.path.expanduser('~/.snake.ini')
@@ -141,7 +140,7 @@ def ate_food(f):
             SNAKE_Y = random.randint(0, height)
             SCORE = SCORE + 1
             Game().set_best_score(SCORE)
-            # SNAKE = '.' * (SCORE + 1)
+            SNAKE = '.' * (SCORE + 1)
             prepare_food(screen, SNAKE_X, SNAKE_Y)
         return f(*args, **kwargs)
 
@@ -156,17 +155,16 @@ def add_snake(screen, **kwargs):
     cursor_x = kwargs.pop('cursor_x')
     cursor_y = kwargs.pop('cursor_y')
     direction = kwargs.pop('direction')
-    """if direction in {'left', 'right'} or len(SNAKE) == 1:
+    if direction in {'left', 'right'} or len(SNAKE) == 1:
         screen.addstr(cursor_y, cursor_x, SNAKE, curses.color_pair(1))
     else:
-        pos = (len(SNAKE)) if direction == 'down' else len(SNAKE)
-        pos -= 1
+        pos = (len(SNAKE)) if direction == 'down' else -len(SNAKE)
+        #pos -= 1
         for i in range(len(SNAKE)):
-
             screen.addstr(cursor_y+pos, cursor_x, SNAKE[0], curses.color_pair(1))
             pos += 1
-            #cursor_y = cursor_y - 2 if direction == 'down' else cursor_y - 1"""
-    screen.addstr(cursor_y, cursor_x, SNAKE, curses.color_pair(1))
+            #cursor_y = cursor_y - 2 if direction == 'down' else cursor_y - 1
+    #screen.addstr(cursor_y, cursor_x, SNAKE, curses.color_pair(1))
     screen.move(cursor_y, cursor_x)
     return cursor_x, cursor_y, direction
 
