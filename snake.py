@@ -23,7 +23,6 @@ DIRECTION = 'right'
 # Todo: Command pattern is suitable here, let's use that after game just works
 # Todo: snake direction alignment
 # Todo: increase length of snake as per score
-# Todo: add best score
 
 class Game:
     config_file = os.path.expanduser('~/.snake.ini')
@@ -141,7 +140,7 @@ def ate_food(f):
             SNAKE_Y = random.randint(0, height)
             SCORE = SCORE + 1
             Game().set_best_score(SCORE)
-            # SNAKE = '.' * (SCORE + 1)
+            SNAKE = '.' * (SCORE + 1)
             prepare_food(screen, SNAKE_X, SNAKE_Y)
         return f(*args, **kwargs)
 
@@ -156,24 +155,26 @@ def add_snake(screen, **kwargs):
     cursor_x = kwargs.pop('cursor_x')
     cursor_y = kwargs.pop('cursor_y')
     direction = kwargs.pop('direction')
-    """if direction in {'left', 'right'} or len(SNAKE) == 1:
+    if direction in {'left', 'right'} or len(SNAKE) == 1:
         screen.addstr(cursor_y, cursor_x, SNAKE, curses.color_pair(1))
     else:
-        pos = (len(SNAKE)) if direction == 'down' else len(SNAKE)
-        pos -= 1
+        pos = -len(SNAKE)
+        #pos -= 1
         for i in range(len(SNAKE)):
-
+            #cursor_y = cursor_y + pos
             screen.addstr(cursor_y+pos, cursor_x, SNAKE[0], curses.color_pair(1))
             pos += 1
-            #cursor_y = cursor_y - 2 if direction == 'down' else cursor_y - 1"""
-    screen.addstr(cursor_y, cursor_x, SNAKE, curses.color_pair(1))
+            #cursor_y = cursor_y - 2 if direction == 'down' else cursor_y - 1
+    #screen.addstr(cursor_y, cursor_x, SNAKE, curses.color_pair(1))
     screen.move(cursor_y, cursor_x)
     return cursor_x, cursor_y, direction
 
 
-def render_status_bar(screen, height, width, game):
+def render_status_bar(screen, height, width, game, **kwargs):
     global SCORE
-    statusbarstr = "RETRO SNAKE GAME. Press q to quit. SCORE: {}, BEST SCORE: {}".format(SCORE, game.get_best_score())
+    cx = kwargs.get('x', False)
+    cy = kwargs.get('y', False)
+    statusbarstr = "RETRO SNAKE GAME. Press q to quit. SCORE: {}, BEST SCORE: {}, x: {}, y:{}".format(SCORE, game.get_best_score(), cx, cy)
     screen.attron(curses.color_pair(3))
     screen.addstr(height - 1, 0, statusbarstr)
     screen.addstr(height - 1, len(statusbarstr), " " *
@@ -219,6 +220,7 @@ def main(win):
     height, width = screen.getmaxyx()
     curses.noecho()
     curses.cbreak()
+    curses.curs_set(0)
     screen.keypad(True)
     win = curses.newwin(height // 2, width // 2, height // 2, width // 2)
     win.nodelay(True)
@@ -239,13 +241,13 @@ def main(win):
             elif key == -1:
                 screen.erase()
                 time.sleep(0.5)
-                render_status_bar(screen, height, width, game)
+                render_status_bar(screen, height, width, game, x=cursor_x, y=cursor_y)
                 prepare_food(screen, SNAKE_X, SNAKE_Y, refresh=False)
                 cursor_x, cursor_y, direction = automove(
                     screen, direction, cursor_x, cursor_y)
             else:
                 screen.erase()
-                render_status_bar(screen, height, width, game)
+                render_status_bar(screen, height, width, game, x=cursor_x, y=cursor_y)
                 prepare_food(screen, SNAKE_X, SNAKE_Y, refresh=False)
                 cursor_x, cursor_y, direction = move_snake.get(key, do_nothing)(screen, cursor_x=cursor_x,
                                                                                 cursor_y=cursor_y, direction=direction, key_press=True)
