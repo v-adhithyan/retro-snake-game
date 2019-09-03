@@ -1,9 +1,9 @@
+import configparser
 import curses
 import functools
 import os
 import random
-import configparser
-from datetime import datetime
+
 import time
 
 begin_x = 20
@@ -159,13 +159,9 @@ def add_snake(screen, **kwargs):
         screen.addstr(cursor_y, cursor_x, SNAKE, curses.color_pair(1))
     else:
         pos = -len(SNAKE)
-        #pos -= 1
         for i in range(len(SNAKE)):
-            #cursor_y = cursor_y + pos
             screen.addstr(cursor_y+pos, cursor_x, SNAKE[0], curses.color_pair(1))
             pos += 1
-            #cursor_y = cursor_y - 2 if direction == 'down' else cursor_y - 1
-    #screen.addstr(cursor_y, cursor_x, SNAKE, curses.color_pair(1))
     screen.move(cursor_y, cursor_x)
     return cursor_x, cursor_y, direction
 
@@ -251,7 +247,6 @@ def main(win):
                 prepare_food(screen, SNAKE_X, SNAKE_Y, refresh=False)
                 cursor_x, cursor_y, direction = move_snake.get(key, do_nothing)(screen, cursor_x=cursor_x,
                                                                                 cursor_y=cursor_y, direction=direction, key_press=True)
-            #automove(screen, direction, cursor_x, cursor_y)
             screen.refresh()
         except Exception as e:
             print(e.__repr__())
